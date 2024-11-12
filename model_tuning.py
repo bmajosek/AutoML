@@ -70,17 +70,15 @@ def get_lr_search_spaces():
 
 def get_xg_search_spaces():
     param_grid = {
-        'classifier__n_estimators': [100, 200, 300],
-        'classifier__max_depth': [3, 5, 7, 9],
-        'classifier__learning_rate': [0.01, 0.1, 0.2],
-        'classifier__subsample': [0.6, 0.8, 1.0],
-        'classifier__colsample_bytree': [0.6, 0.8, 1.0]
+        'classifier__n_estimators': [100, 300],
+        'classifier__max_depth': [3, 5, 7],
+        'classifier__learning_rate': [0.01, 0.2],
+        'classifier__subsample': [0.6, 1.0],
     }
     search_spaces = {
         'classifier__n_estimators': (100, 300),
-        'classifier__max_depth': (3, 10),
+        'classifier__max_depth': (3, 8),
         'classifier__learning_rate': (0.01, 0.3, 'log-uniform'),
         'classifier__subsample': (0.5, 1.0),
-        'classifier__colsample_bytree': (0.5, 1.0)
     }
     return param_grid, search_spaces

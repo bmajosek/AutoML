@@ -5,7 +5,8 @@ def load_wine_data():
     df = pd.read_csv('/content/drive/MyDrive/ml/WineQT.csv')
     y = df['quality']
     X = df.drop(columns='quality')
-    return X, y
+    y_encoded = encode_labels(y)
+    return X, y_encoded
 
 def load_drug_data():
     df = pd.read_csv('/content/drive/MyDrive/ml/drug.csv')

@@ -5,52 +5,49 @@ from model_tuning import (create_rf_pipeline, create_lr_pipeline, create_xg_pipe
                           get_rf_search_spaces, get_lr_search_spaces, get_xg_search_spaces)
 
 def main():
-    # Load data
     X_wine, y_wine = load_wine_data()
     X_drug, y_drug = load_drug_data()
     X_iris, y_iris = load_iris_data()
     X_titanic_train, y_titanic_train, _, _ = load_titanic_data()
 
-    # Preprocessing
     wine_preprocessor = create_wine_preprocessor()
     drug_preprocessor = create_drug_preprocessor()
     iris_preprocessor = create_iris_preprocessor()
     titanic_preprocessor = create_titanic_preprocessor()
 
-    # Model Pipelines
-    rf_pipeline = create_rf_pipeline(wine_preprocessor)
-    lr_pipeline = create_lr_pipeline(drug_preprocessor)
-    xg_pipeline = create_xg_pipeline(iris_preprocessor)
-
-    # Get params
     rf_param_grid, rf_search_spaces = get_rf_search_spaces()
     lr_param_grid, lr_search_spaces = get_lr_search_spaces()
     xg_param_grid, xg_search_spaces = get_xg_search_spaces()
 
-    # Perform Searches
-    print("Random Forest Tuning:")
-    rf_grid_search = perform_grid_search(rf_pipeline, rf_param_grid, X_wine, y_wine)
-    rf_random_search = perform_random_search(rf_pipeline, rf_param_grid, X_wine, y_wine)
-    rf_bayesian_search = perform_bayesian_search(rf_pipeline, rf_search_spaces, X_wine, y_wine)
-    print("Best RF Grid Search Params:", rf_grid_search.best_params_)
-    print("Best RF Random Search Params:", rf_random_search.best_params_)
-    print("Best RF Bayesian Search Params:", rf_bayesian_search.best_params_)
+    datasets = [
+        ('Wine', X_wine, y_wine, wine_preprocessor),
+        ('Drug', X_drug, y_drug, drug_preprocessor),
+        ('Iris', X_iris, y_iris, iris_preprocessor),
+        ('Titanic', X_titanic_train, y_titanic_train, titanic_preprocessor)
+    ]
 
-    print("\nLogistic Regression Tuning:")
-    lr_grid_search = perform_grid_search(lr_pipeline, lr_param_grid, X_drug, y_drug)
-    lr_random_search = perform_random_search(lr_pipeline, lr_param_grid, X_drug, y_drug)
-    lr_bayesian_search = perform_bayesian_search(lr_pipeline, lr_search_spaces, X_drug, y_drug)
-    print("Best LR Grid Search Params:", lr_grid_search.best_params_)
-    print("Best LR Random Search Params:", lr_random_search.best_params_)
-    print("Best LR Bayesian Search Params:", lr_bayesian_search.best_params_)
+    models = [
+        ('Random Forest', create_rf_pipeline, rf_param_grid, rf_search_spaces),
+        ('Logistic Regression', create_lr_pipeline, lr_param_grid, lr_search_spaces),
+        ('XGBoost', create_xg_pipeline, xg_param_grid, xg_search_spaces)
+    ]
 
-    print("\nXGBoost Tuning:")
-    xg_grid_search = perform_grid_search(xg_pipeline, xg_param_grid, X_iris, y_iris)
-    xg_random_search = perform_random_search(xg_pipeline, xg_param_grid, X_iris, y_iris)
-    xg_bayesian_search = perform_bayesian_search(xg_pipeline, xg_search_spaces, X_iris, y_iris)
-    print("Best XG Grid Search Params:", xg_grid_search.best_params_)
-    print("Best XG Random Search Params:", xg_random_search.best_params_)
-    print("Best XG Bayesian Search Params:", xg_bayesian_search.best_params_)
+    for dataset_name, X, y, preprocessor in datasets:
+        print(f"\nDataset: {dataset_name}")
+        for model_name, create_pipeline_func, param_grid, search_spaces in models:
+            print('#'*50)
+            print(f"\n{model_name} Tuning on {dataset_name}:")
+            print('#'*50)
+            pipeline = create_pipeline_func(preprocessor)
+            try:
+                grid_search = perform_grid_search(pipeline, param_grid, X, y)
+                random_search = perform_random_search(pipeline, param_grid, X, y)
+                bayesian_search = perform_bayesian_search(pipeline, search_spaces, X, y)
+                print(f"Best {model_name} params for Grid Search:", grid_search.best_params_)
+                print(f"Best {model_name} params for Random Search:", random_search.best_params_)
+                print(f"Best {model_name} params for Bayesian Search:", bayesian_search.best_params_)
+            except Exception as e:
+                print(f":'( error in {model_name} on {dataset_name}: {e}")
 
 if __name__ == "__main__":
     main()

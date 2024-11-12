@@ -1,5 +1,5 @@
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 
@@ -53,3 +53,7 @@ def create_titanic_preprocessor():
             ('cat', categorical_transformer, categorical_features)
         ]
     )
+
+def encode_labels(y):
+    label_encoder = LabelEncoder()
+    return label_encoder.fit_transform(y)

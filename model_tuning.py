@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from scipy.stats import loguniform
+from skopt.space import Real, Categorical
 
 def create_rf_pipeline(preprocessor):
     return Pipeline(steps=[
@@ -15,13 +16,13 @@ def create_rf_pipeline(preprocessor):
 def create_lr_pipeline(preprocessor):
     return Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('classifier', LogisticRegression(max_iter=1000, random_state=42))
+        ('classifier', LogisticRegression(max_iter=5000, random_state=42))
     ])
 
 def create_xg_pipeline(preprocessor):
     return Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('classifier', XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42))
+        ('classifier', XGBClassifier(eval_metric='logloss', random_state=42))
     ])
 
 def perform_grid_search(pipeline, param_grid, X_train, y_train):
@@ -39,7 +40,6 @@ def perform_bayesian_search(pipeline, search_spaces, X_train, y_train, n_iter=20
     bayesian_search.fit(X_train, y_train)
     return bayesian_search
 
-# Params
 def get_rf_search_spaces():
     param_grid = {
         'classifier__n_estimators': [100, 200, 300],
@@ -62,16 +62,16 @@ def get_lr_search_spaces():
         'classifier__solver': ['lbfgs', 'saga']
     }
     search_spaces = {
-        'classifier__C': loguniform(0.01, 10),
-        'classifier__penalty': ['l2'],
-        'classifier__solver': ['lbfgs', 'saga']
+        'classifier__C': Real(0.01, 10, prior='log-uniform'), 
+        'classifier__penalty': Categorical(['l2']),   
+        'classifier__solver': Categorical(['lbfgs', 'saga'])  
     }
     return param_grid, search_spaces
 
 def get_xg_search_spaces():
     param_grid = {
         'classifier__n_estimators': [100, 200, 300],
-        'classifier__max_depth': [3, 5, 7],
+        'classifier__max_depth': [3, 5, 7, 9],
         'classifier__learning_rate': [0.01, 0.1, 0.2],
         'classifier__subsample': [0.6, 0.8, 1.0],
         'classifier__colsample_bytree': [0.6, 0.8, 1.0]
